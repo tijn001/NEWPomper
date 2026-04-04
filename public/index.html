@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collection Pomper — Store Import Manager</title>
+  <title>Collections — Store Import Manager</title>
   <meta name="description" content="Manage e-commerce store product collection imports across stores, collections, and product sets." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -61,14 +61,14 @@
       --primary:        #1A5CB0;
       --primary-hover:  #124494;
       --primary-light:  #C8E0F8;
-      --success:        #1A6B3C;
-      --success-bg:     #D4F5E4;
-      --success-light:  #B8EDD2;
+      --success:        #2e9e60;
+      --success-bg:     #edfbf3;
+      --success-light:  #d4f5e4;
       --warning:        #A05010;
       --cloud-stroke:   #9BBDE0;
       --cloud-fill:     #EEF5FF;
-      --cloud-fill-done:#D8F5E8;
-      --cloud-stroke-done: #5DB890;
+      --cloud-fill-done:#edfbf3;
+      --cloud-stroke-done: #a8dfc0;
       --shadow-sm: 0 1px 4px rgba(18,32,58,0.1);
       --shadow-md: 0 4px 18px rgba(18,32,58,0.13);
       --shadow-lg: 0 12px 44px rgba(18,32,58,0.18);
@@ -298,115 +298,65 @@
     }
     .btn-ghost:hover { background: var(--surface-offset); border-color: var(--primary); }
 
-    /* ── CLOUD SHAPES ───────────────────────────────────────── */
+    /* ── STORE CARDS (square with rounded corners) ─────────── */
 
     .cloud-card {
       position: relative;
       background: var(--cloud-fill);
-      border: 2.5px solid var(--cloud-stroke);
-      border-radius: 42% 58% 38% 62% / 55% 42% 58% 45%;
-      padding: var(--space-10) var(--space-5) var(--space-6);
-      box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.6);
+      border: 2px solid var(--cloud-stroke);
+      border-radius: 20px;
+      padding: var(--space-6) var(--space-5) var(--space-5);
+      box-shadow: var(--shadow-md);
       transition: transform var(--transition-slow), box-shadow var(--transition-slow), background var(--transition-slow), border-color var(--transition-slow);
       cursor: pointer;
-      min-height: 220px;
+      min-height: 200px;
       display: flex; flex-direction: column;
     }
-    .cloud-card::before {
-      content: '';
-      position: absolute;
-      top: -22px; left: 15%;
-      width: 48%; height: 52px;
-      background: var(--cloud-fill);
-      border: 2.5px solid var(--cloud-stroke);
-      border-radius: 50%;
-      transition: background var(--transition-slow), border-color var(--transition-slow);
-    }
-    .cloud-card::after {
-      content: '';
-      position: absolute;
-      top: -14px; left: 50%;
-      width: 34%; height: 36px;
-      background: var(--cloud-fill);
-      border: 2.5px solid var(--cloud-stroke);
-      border-radius: 50%;
-      transition: background var(--transition-slow), border-color var(--transition-slow);
-    }
+    .cloud-card::before { display: none; }
+    .cloud-card::after  { display: none; }
+
     .cloud-card:hover {
-      transform: translateY(-5px) scale(1.025);
-      box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.7);
+      transform: translateY(-4px) scale(1.015);
+      box-shadow: var(--shadow-lg);
     }
 
     .cloud-card.done {
+      background: #edfbf3;
+      border-color: #a8dfc0;
+      box-shadow: 0 4px 18px rgba(29,160,80,0.08);
+    }
+    [data-theme="dark"] .cloud-card.done {
       background: var(--cloud-fill-done);
       border-color: var(--cloud-stroke-done);
-      box-shadow: 0 4px 18px rgba(29,160,80,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
     }
-    .cloud-card.done::before { background: var(--cloud-fill-done); border-color: var(--cloud-stroke-done); }
-    .cloud-card.done::after  { background: var(--cloud-fill-done); border-color: var(--cloud-stroke-done); }
 
-    /* Variation per card position for organic feel */
-    .cloud-card:nth-child(2n) {
-      border-radius: 58% 42% 55% 45% / 42% 58% 44% 56%;
-    }
-    .cloud-card:nth-child(2n)::before { left: 20%; width: 44%; height: 46px; top: -18px; }
-    .cloud-card:nth-child(2n)::after  { left: 55%; width: 30%; height: 32px; top: -12px; }
-
-    .cloud-card:nth-child(3n) {
-      border-radius: 38% 62% 52% 48% / 58% 38% 62% 42%;
-    }
-    .cloud-card:nth-child(3n)::before { left: 12%; width: 52%; height: 50px; top: -20px; }
-    .cloud-card:nth-child(3n)::after  { left: 55%; width: 28%; height: 34px; top: -11px; }
-
-    .cloud-card:nth-child(4n) {
-      border-radius: 62% 38% 48% 52% / 45% 55% 42% 58%;
-    }
-    .cloud-card:nth-child(4n)::before { left: 18%; width: 46%; height: 48px; top: -19px; }
-    .cloud-card:nth-child(4n)::after  { left: 52%; width: 32%; height: 30px; top: -10px; }
-
-    /* Full-screen cloud container (Level 2 & 3) */
+    /* Full-screen container (Level 2 & 3) */
     .cloud-full {
       flex: 1;
       margin: var(--space-4) var(--space-6) var(--space-6);
       background: var(--cloud-fill);
-      border: 2.5px solid var(--cloud-stroke);
-      border-radius: 3% 4% 2% 3% / 2% 3% 4% 2%;
+      border: 2px solid var(--cloud-stroke);
+      border-radius: 20px;
       box-shadow: var(--shadow-lg);
       padding: var(--space-8) var(--space-8);
       position: relative;
       overflow: hidden;
       transition: background var(--transition-slow), border-color var(--transition-slow);
     }
-    .cloud-full::before {
-      content: '';
-      position: absolute; top: -16px; left: 10%;
-      width: 30%; height: 40px;
-      background: var(--cloud-fill);
-      border: 2.5px solid var(--cloud-stroke);
-      border-bottom: none;
-      border-radius: 50% 50% 0 0;
-      transition: background var(--transition-slow), border-color var(--transition-slow);
-    }
-    .cloud-full::after {
-      content: '';
-      position: absolute; top: -10px; left: 35%;
-      width: 22%; height: 28px;
-      background: var(--cloud-fill);
-      border: 2.5px solid var(--cloud-stroke);
-      border-bottom: none;
-      border-radius: 50% 50% 0 0;
-      transition: background var(--transition-slow), border-color var(--transition-slow);
-    }
+    .cloud-full::before { display: none; }
+    .cloud-full::after  { display: none; }
     .cloud-full.done {
+      background: #edfbf3;
+      border-color: #a8dfc0;
+    }
+    [data-theme="dark"] .cloud-full.done {
       background: var(--cloud-fill-done);
       border-color: var(--cloud-stroke-done);
     }
-    .cloud-full.done::before { background: var(--cloud-fill-done); border-color: var(--cloud-stroke-done); }
-    .cloud-full.done::after  { background: var(--cloud-fill-done); border-color: var(--cloud-stroke-done); }
 
     .cloud-full-inner {
       height: 100%; overflow-y: auto;
-      padding-top: var(--space-4);
+      padding-top: 0;
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
     }
@@ -860,7 +810,7 @@
         <path d="M22 17H6C3.24 17 1 14.76 1 12C1 9.53 2.76 7.48 5.12 7.07C5.04 6.73 5 6.37 5 6C5 3.24 7.24 1 10 1C11.77 1 13.34 1.9 14.24 3.27C14.78 3.1 15.38 3 16 3C18.76 3 21 5.24 21 8C21 8.1 21 8.21 20.99 8.31C22.83 9.04 24 10.85 24 13C24 15.21 23.21 17 22 17Z" fill="var(--primary)" opacity="0.2"/>
         <path d="M22 17H6C3.24 17 1 14.76 1 12C1 9.53 2.76 7.48 5.12 7.07C5.04 6.73 5 6.37 5 6C5 3.24 7.24 1 10 1C11.77 1 13.34 1.9 14.24 3.27C14.78 3.1 15.38 3 16 3C18.76 3 21 5.24 21 8C21 8.1 21 8.21 20.99 8.31C22.83 9.04 24 10.85 24 13C24 15.21 23.21 17 22 17Z" stroke="var(--primary)" stroke-width="1.5" fill="none"/>
       </svg>
-      Collection Pomper
+      Collections
     </a>
 
     <!-- Nav context (changes by level) -->
@@ -1014,6 +964,10 @@
         <label for="store-shopify-input">Shopify URL</label>
         <input type="text" id="store-shopify-input" placeholder="e.g. bellatorri.myshopify.com" data-testid="store-shopify-input" />
       </div>
+      <div class="form-field">
+        <label for="store-notes-input">Notes</label>
+        <textarea id="store-notes-input" placeholder="Any notes about this store..." rows="3" style="padding:var(--space-2) var(--space-3);border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--surface);font-size:var(--text-sm);resize:vertical;transition:border-color var(--transition),box-shadow var(--transition);" onfocus="this.style.borderColor='var(--primary)';this.style.boxShadow='0 0 0 3px var(--primary-light)'" onblur="this.style.borderColor='';this.style.boxShadow=''"></textarea>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-ghost" id="modal-store-cancel">Cancel</button>
@@ -1160,6 +1114,14 @@ function getProductSetsStats(subcollection) {
   return { total, done };
 }
 
+function getProductCount(subcollection) {
+  return subcollection.productSets.reduce((sum, ps) => sum + (parseInt(ps.qty) || 0), 0);
+}
+
+function getCollectionProductCount(collection) {
+  return collection.subcollections.reduce((sum, sub) => sum + getProductCount(sub), 0);
+}
+
 function getSubcollectionStats(collection) {
   let total = 0, done = 0;
   for (const sub of collection.subcollections) {
@@ -1286,7 +1248,17 @@ function renderStoresGrid(filter = '') {
 
     card.innerHTML = `
       <div class="store-card-content">
-        <div class="store-card-flag">${store.flag}</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px">
+          <div class="store-card-flag">${store.flag}</div>
+          <div style="display:flex;gap:2px;flex-shrink:0;margin-top:2px">
+            <button class="btn-icon-small store-delete-btn" title="Duplicate store" onclick="duplicateStore('${store.id}',event)" style="color:var(--text-faint)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+            <button class="btn-icon-small delete store-delete-btn" title="Delete store" onclick="deleteStore('${store.id}',event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>
         <div class="store-card-name">${escHtml(store.name)}</div>
         ${store.domain ? `<div class="store-card-domain">${escHtml(store.domain)}</div>` : ''}
         <div class="store-card-progress">
@@ -1304,7 +1276,10 @@ function renderStoresGrid(filter = '') {
       </div>
     `;
 
-    card.addEventListener('click', () => goToLevel2(store.id));
+    card.addEventListener('click', e => {
+      if (e.target.closest('.store-delete-btn')) return;
+      goToLevel2(store.id);
+    });
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') goToLevel2(store.id); });
 
     grid.appendChild(card);
@@ -1363,6 +1338,11 @@ function renderLevel2() {
         <input type="text" id="edit-shopify" value="${escAttr(store.shopifyUrl || '')}" placeholder="e.g. bellatorri.myshopify.com" data-testid="edit-shopify" />
       </div>
     </div>
+    ${store.notes || true ? `
+    <div class="meta-field" style="margin-top:var(--space-3)">
+      <label for="edit-notes">Notes</label>
+      <textarea id="edit-notes" rows="2" placeholder="Any notes about this store..." style="padding:var(--space-2) var(--space-3);border:1.5px solid var(--border);border-radius:var(--radius-md);background:var(--surface-2);font-size:var(--text-sm);resize:vertical;font-family:inherit;color:inherit;">${escHtml(store.notes || '')}</textarea>
+    </div>` : ''}
   `;
 
   // Auto-save meta fields
@@ -1373,6 +1353,10 @@ function renderLevel2() {
   });
   document.getElementById('edit-shopify').addEventListener('input', e => {
     store.shopifyUrl = e.target.value.trim();
+    saveData();
+  });
+  document.getElementById('edit-notes').addEventListener('input', e => {
+    store.notes = e.target.value;
     saveData();
   });
 
@@ -1402,10 +1386,12 @@ function renderCollectionList() {
     item.className = `collection-item${colDone ? ' done' : ''}`;
     item.setAttribute('data-col-id', col.id);
 
+    const colProdCount = getCollectionProductCount(col);
     item.innerHTML = `
       <div class="collection-row" data-testid="collection-row-${col.id}">
         <span class="collection-row-name">${escHtml(col.name)}</span>
         <div class="collection-row-progress">
+          ${colProdCount > 0 ? `<span class="progress-pill" style="color:var(--text-faint);font-weight:500">${colProdCount} products</span>` : ''}
           <span class="progress-pill${colDone ? ' done' : ''}">${stats.done}/${stats.total}</span>
           <div class="progress-bar" style="width:64px">
             <div class="progress-fill${colDone ? ' done' : ''}" style="width:${pct}%"></div>
@@ -1442,9 +1428,11 @@ function renderSubcollectionPanel(col) {
   col.subcollections.forEach(sub => {
     const { total, done } = getProductSetsStats(sub);
     const subDone = isSubcollDone(sub);
+    const subProdCount = getProductCount(sub);
     html += `
       <div class="subcollection-row">
         <span class="subcollection-row-name">${subDone ? '✅ ' : ''}${escHtml(sub.name)}</span>
+        ${subProdCount > 0 ? `<span class="subcollection-row-progress" style="color:var(--text-faint);font-weight:500">${subProdCount} products</span>` : ''}
         <span class="subcollection-row-progress${subDone ? ' done' : ''}">${done}/${total}</span>
         <button class="btn-arrow" title="Open ${escAttr(sub.name)}" data-testid="open-subcoll-${sub.id}" onclick="goToLevel3('${col.id}','${sub.id}')">→</button>
         <button class="btn-icon-small delete" title="Delete subcollection" onclick="deleteSubcollection('${col.id}','${sub.id}',event)">
@@ -1570,6 +1558,7 @@ function openNewStoreModal() {
   document.getElementById('store-name-input').value = '';
   document.getElementById('store-domain-input').value = '';
   document.getElementById('store-shopify-input').value = '';
+  document.getElementById('store-notes-input').value = '';
   renderFlagGrid();
   openModal('modal-store');
   setTimeout(() => document.getElementById('store-name-input').focus(), 100);
@@ -1584,6 +1573,7 @@ function openEditStoreModal(storeId) {
   document.getElementById('store-name-input').value = store.name;
   document.getElementById('store-domain-input').value = store.domain || '';
   document.getElementById('store-shopify-input').value = store.shopifyUrl || '';
+  document.getElementById('store-notes-input').value = store.notes || '';
   renderFlagGrid();
   openModal('modal-store');
 }
@@ -1593,19 +1583,50 @@ function saveStore() {
   if (!name) { document.getElementById('store-name-input').focus(); return; }
   const domain = document.getElementById('store-domain-input').value.trim();
   const shopifyUrl = document.getElementById('store-shopify-input').value.trim();
+  const notes = document.getElementById('store-notes-input').value.trim();
 
   if (editingStoreId) {
     const store = getStore(editingStoreId);
-    Object.assign(store, { name, flag: selectedFlag, domain, shopifyUrl });
+    Object.assign(store, { name, flag: selectedFlag, domain, shopifyUrl, notes });
   } else {
     state.stores.push({
-      id: uid(), name, flag: selectedFlag, domain, shopifyUrl,
+      id: uid(), name, flag: selectedFlag, domain, shopifyUrl, notes,
       collections: []
     });
   }
   saveData();
   closeModal('modal-store');
   goToLevel1();
+}
+
+function deleteStore(storeId, e) {
+  e.stopPropagation();
+  if (!confirm('Delete this store and all its data?')) return;
+  state.stores = state.stores.filter(s => s.id !== storeId);
+  saveData();
+  renderStoresGrid();
+  renderStoresDropdown();
+}
+
+function duplicateStore(storeId, e) {
+  e.stopPropagation();
+  const store = getStore(storeId);
+  if (!store) return;
+  const clone = JSON.parse(JSON.stringify(store));
+  // Give clone and all its children new IDs
+  clone.id = uid();
+  clone.name = clone.name + ' (copy)';
+  clone.collections.forEach(col => {
+    col.id = uid();
+    col.subcollections.forEach(sub => {
+      sub.id = uid();
+      sub.productSets.forEach(ps => { ps.id = uid(); ps.done = false; });
+    });
+  });
+  state.stores.push(clone);
+  saveData();
+  renderStoresGrid();
+  renderStoresDropdown();
 }
 
 function deleteCollection(colId, e) {
