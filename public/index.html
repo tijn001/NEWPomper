@@ -1275,7 +1275,8 @@ function renderStoresGrid(filter = '') {
   const grid = document.getElementById('stores-grid');
   const empty = document.getElementById('stores-empty');
   const lf = filter.toLowerCase();
-  const stores = state.stores.filter(s => s.name.toLowerCase().includes(lf));
+  const stores = state.stores.filter(s => s.name.toLowerCase().includes(lf))
+    .sort((a, b) => isStoreDone(a) - isStoreDone(b));
 
   grid.innerHTML = '';
 
