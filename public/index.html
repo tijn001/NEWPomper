@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collection Pomper — Store Import Manager</title>
+  <meta name="description" content="Manage e-commerce store product collection imports across stores, collections, and product sets." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300..800&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&display=swap" rel="stylesheet">
+  <style>
+    /* ── RESET ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      scroll-behavior: smooth;
+    }
+
+    /* ── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'Plus Jakarta Sans', 'Helvetica Neue', sans-serif;
+
+      --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
+      --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
+      --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+      --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
+      --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
+
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+      --radius-full: 9999px;
+
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-slow: 360ms cubic-bezier(0.16, 1, 0.3, 1);
+
+      /* Light palette — sky/cloud inspired */
+      --bg:             #E8F0FB;
+      --surface:        #F2F7FF;
+      --surface-2:      #FFFFFF;
+      --surface-offset: #D8E6F5;
+      --border:         #B0C8E8;
+      --divider:        #C8DDEF;
+      --text:           #12203A;
+      --text-muted:     #4A6480;
+      --text-faint:     #8AA4C0;
+      --primary:        #1A5CB0;
+      --primary-hover:  #124494;
+      --primary-light:  #C8E0F8;
+      --success:        #1A6B3C;
+      --success-bg:     #D4F5E4;
+      --success-light:  #B8EDD2;
+      --warning:        #A05010;
+      --cloud-stroke:   #9BBDE0;
+      --cloud-fill:     #EEF5FF;
+      --cloud-fill-done:#D8F5E8;
+      --cloud-stroke-done: #5DB890;
+      --shadow-sm: 0 1px 4px rgba(18,32,58,0.1);
+      --shadow-md: 0 4px 18px rgba(18,32,58,0.13);
+      --shadow-lg: 0 12px 44px rgba(18,32,58,0.18);
+    }
+
+    [data-theme="dark"] {
+      --bg:             #101820;
+      --surface:        #141D28;
+      --surface-2:      #192232;
+      --surface-offset: #0D1520;
+      --border:         #263650;
+      --divider:        #1C2B40;
+      --text:           #D0DDE8;
+      --text-muted:     #6B8CAA;
+      --text-faint:     #3A5470;
+      --primary:        #5B9FE0;
+      --primary-hover:  #78B5F0;
+      --primary-light:  #1A2E48;
+      --success:        #4DB87A;
+      --success-bg:     #0D2A1C;
+      --success-light:  #153A28;
+      --warning:        #E0883A;
+      --cloud-stroke:   #2A4060;
+      --cloud-fill:     #141D28;
+      --cloud-fill-done:#0D2A1C;
+      --cloud-stroke-done: #2B6B4A;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) {
+        --bg: #101820; --surface: #141D28; --surface-2: #192232;
+        --surface-offset: #0D1520; --border: #263650; --divider: #1C2B40;
+        --text: #D0DDE8; --text-muted: #6B8CAA; --text-faint: #3A5470;
+        --primary: #5B9FE0; --primary-hover: #78B5F0; --primary-light: #1A2E48;
+        --success: #4DB87A; --success-bg: #0D2A1C; --success-light: #153A28;
+        --warning: #E0883A; --cloud-stroke: #2A4060; --cloud-fill: #141D28;
+        --cloud-fill-done: #0D2A1C; --cloud-stroke-done: #2B6B4A;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+        --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+        --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+      }
+    }
+
+    /* ── BASE ─────────────────────────────────────────────── */
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+    input, select, textarea { font: inherit; color: inherit; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    img, svg { display: block; }
+
+    :focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── APP SHELL ─────────────────────────────────────────── */
+    #app { min-height: 100dvh; display: flex; flex-direction: column; }
+
+    /* ── TOP BAR ───────────────────────────────────────────── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-3) var(--space-6);
+      display: flex; align-items: center; gap: var(--space-4);
+    }
+
+    .topbar-logo {
+      display: flex; align-items: center; gap: var(--space-2);
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .topbar-logo:hover { text-decoration: none; color: var(--primary-hover); }
+    .topbar-logo svg { flex-shrink: 0; }
+
+    .topbar-nav {
+      display: flex; align-items: center; gap: var(--space-3);
+      flex: 1;
+    }
+
+    .topbar-actions {
+      display: flex; align-items: center; gap: var(--space-3);
+      margin-left: auto;
+    }
+
+    /* back + home buttons */
+    .nav-back {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      transition: background var(--transition), color var(--transition);
+    }
+    .nav-back:hover { background: var(--surface-offset); color: var(--text); }
+
+    /* breadcrumb */
+    .breadcrumb {
+      display: flex; align-items: center; gap: var(--space-2);
+      font-size: var(--text-sm); color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+    .breadcrumb-sep { color: var(--text-faint); }
+    .breadcrumb-item { color: var(--text); font-weight: 600; }
+
+    /* theme toggle */
+    .theme-toggle {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-full);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      transition: background var(--transition), color var(--transition);
+    }
+    .theme-toggle:hover { background: var(--surface-offset); color: var(--text); }
+
+    /* ── SEARCH + CONTROLS ─────────────────────────────────── */
+    .controls {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-4) var(--space-6);
+      flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      position: relative; flex: 1; min-width: 200px; max-width: 360px;
+    }
+    .search-wrap svg {
+      position: absolute; left: var(--space-3); top: 50%; transform: translateY(-50%);
+      color: var(--text-faint); pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 22px);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-full);
+      background: var(--surface-2);
+      font-size: var(--text-sm);
+      color: var(--text);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); outline: none; }
+    .search-input::placeholder { color: var(--text-faint); }
+
+    /* dropdown */
+    .dropdown-wrap { position: relative; }
+    .dropdown-btn {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-full);
+      background: var(--surface-2);
+      font-size: var(--text-sm); font-weight: 600;
+      color: var(--text);
+      transition: border-color var(--transition), background var(--transition);
+      white-space: nowrap;
+    }
+    .dropdown-btn:hover { border-color: var(--primary); background: var(--primary-light); }
+    .dropdown-btn.open { border-color: var(--primary); }
+    .dropdown-btn svg { transition: transform var(--transition); }
+    .dropdown-btn.open svg { transform: rotate(180deg); }
+
+    .dropdown-menu {
+      position: absolute; top: calc(100% + var(--space-2)); left: 0; z-index: 200;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      min-width: 200px; max-width: 280px;
+      max-height: 280px; overflow-y: auto;
+      padding: var(--space-2);
+      display: none;
+    }
+    .dropdown-menu.open { display: block; }
+    .dropdown-item {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm); cursor: pointer;
+      transition: background var(--transition);
+      width: 100%; text-align: left;
+    }
+    .dropdown-item:hover { background: var(--surface-offset); }
+
+    /* primary button */
+    .btn-primary {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-5);
+      background: var(--primary);
+      color: #fff;
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm); font-weight: 700;
+      transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-ghost {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm); font-weight: 600;
+      color: var(--text);
+      background: transparent;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .btn-ghost:hover { background: var(--surface-offset); border-color: var(--primary); }
+
+    /* ── CLOUD SHAPES ───────────────────────────────────────── */
+
+    .cloud-card {
+      position: relative;
+      background: var(--cloud-fill);
+      border: 2.5px solid var(--cloud-stroke);
+      border-radius: 42% 58% 38% 62% / 55% 42% 58% 45%;
+      padding: var(--space-10) var(--space-5) var(--space-6);
+      box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.6);
+      transition: transform var(--transition-slow), box-shadow var(--transition-slow), background var(--transition-slow), border-color var(--transition-slow);
+      cursor: pointer;
+      min-height: 220px;
+      display: flex; flex-direction: column;
+    }
+    .cloud-card::before {
+      content: '';
+      position: absolute;
+      top: -22px; left: 15%;
+      width: 48%; height: 52px;
+      background: var(--cloud-fill);
+      border: 2.5px solid var(--cloud-stroke);
+      border-radius: 50%;
+      transition: background var(--transition-slow), border-color var(--transition-slow);
+    }
+    .cloud-card::after {
+      content: '';
+      position: absolute;
+      top: -14px; left: 50%;
+      width: 34%; height: 36px;
+      background: var(--cloud-fill);
+      border: 2.5px solid var(--cloud-stroke);
+      border-radius: 50%;
+      transition: background var(--transition-slow), border-color var(--transition-slow);
+    }
+    .cloud-card:hover {
+      transform: translateY(-5px) scale(1.025);
+      box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+
+    .cloud-card.done {
+      background: var(--cloud-fill-done);
+      border-color: var(--cloud-stroke-done);
+      box-shadow: 0 4px 18px rgba(29,160,80,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+    .cloud-card.done::before { background: var(--cloud-fill-done); border-color: var(--cloud-stroke-done); }
+    .cloud-card.done::after  { background: var(--cloud-fill-done); border-color: var(--cloud-stroke-done); }
+
+    /* Variation per card position for organic feel */
+    .cloud-card:nth-child(2n) {
+      border-radius: 58% 42% 55% 45% / 42% 58% 44% 56%;
+    }
+    .cloud-card:nth-child(2n)::before { left: 20%; width: 44%; height: 46px; top: -18px; }
+    .cloud-card:nth-child(2n)::after  { left: 55%; width: 30%; height: 32px; top: -12px; }
+
+    .cloud-card:nth-child(3n) {
+      border-radius: 38% 62% 52% 48% / 58% 38% 62% 42%;
+    }
+    .cloud-card:nth-child(3n)::before { left: 12%; width: 52%; height: 50px; top: -20px; }
+    .cloud-card:nth-child(3n)::after  { left: 55%; width: 28%; height: 34px; top: -11px; }
+
+    .cloud-card:nth-child(4n) {
+      border-radius: 62% 38% 48% 52% / 45% 55% 42% 58%;
+    }
+    .cloud-card:nth-child(4n)::before { left: 18%; width: 46%; height: 48px; top: -19px; }
+    .cloud-card:nth-child(4n)::after  { left: 52%; width: 32%; height: 30px; top: -10px; }
+
+    /* Full-screen cloud container (Level 2 & 3) */
+    .cloud-full {
+      flex: 1;
+      margin: var(--space-4) var(--space-6) var(--space-6);
+      background: var(--cloud-fill);
+      border: 2.5px solid var(--cloud-stroke);
+      border-radius: 3% 4% 2% 3% / 2% 3% 4% 2%;
+      box-shadow: var(--shadow-lg);
+      padding: var(--space-8) var(--space-8);
+      position: relative;
+      overflow: hidden;
+      transition: background var(--transition-slow), border-color var(--transition-slow);
+    }
+    .cloud-full::before {
+      content: '';
+      position: absolute; top: -16px; left: 10%;
+      width: 30%; height: 40px;
+      background: var(--cloud-fill);
+      border: 2.5px solid var(--cloud-stroke);
+      border-bottom: none;
+      border-radius: 50% 50% 0 0;
+      transition: background var(--transition-slow), border-color var(--transition-slow);
+    }
+    .cloud-full::after {
+      content: '';
+      position: absolute; top: -10px; left: 35%;
+      width: 22%; height: 28px;
+      background: var(--cloud-fill);
+      border: 2.5px solid var(--cloud-stroke);
+      border-bottom: none;
+      border-radius: 50% 50% 0 0;
+      transition: background var(--transition-slow), border-color var(--transition-slow);
+    }
+    .cloud-full.done {
+      background: var(--cloud-fill-done);
+      border-color: var(--cloud-stroke-done);
+    }
+    .cloud-full.done::before { background: var(--cloud-fill-done); border-color: var(--cloud-stroke-done); }
+    .cloud-full.done::after  { background: var(--cloud-fill-done); border-color: var(--cloud-stroke-done); }
+
+    .cloud-full-inner {
+      height: 100%; overflow-y: auto;
+      padding-top: var(--space-4);
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .cloud-full-inner::-webkit-scrollbar { width: 6px; }
+    .cloud-full-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── STORE GRID ─────────────────────────────────────────── */
+    #level1 { flex: 1; display: flex; flex-direction: column; }
+
+    .stores-grid {
+      padding: var(--space-2) var(--space-6) var(--space-10);
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-8) var(--space-6);
+    }
+
+    .store-card-content {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; gap: var(--space-3);
+      flex: 1;
+    }
+
+    .store-card-flag {
+      font-size: 2rem; line-height: 1;
+    }
+    .store-card-name {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .store-card-domain {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+    }
+    .store-card-progress { margin-top: auto; padding-top: var(--space-3); }
+
+    /* Done badge */
+    .done-badge {
+      display: inline-flex; align-items: center; gap: var(--space-1);
+      background: var(--success-bg);
+      color: var(--success);
+      border-radius: var(--radius-full);
+      padding: 2px var(--space-3);
+      font-size: var(--text-xs); font-weight: 700;
+    }
+
+    /* ── PROGRESS BAR ───────────────────────────────────────── */
+    .progress-wrap {
+      display: flex; flex-direction: column; gap: var(--space-1);
+    }
+    .progress-label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: var(--text-xs); color: var(--text-muted); font-weight: 600;
+    }
+    .progress-bar {
+      height: 6px;
+      background: var(--surface-offset);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: var(--radius-full);
+      transition: width 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .progress-fill.done { background: var(--success); }
+
+    /* ── EMPTY STATE ────────────────────────────────────────── */
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: var(--space-4); text-align: center;
+      padding: var(--space-12) var(--space-6);
+      color: var(--text-muted);
+    }
+    .empty-state svg { color: var(--text-faint); }
+    .empty-state h3 { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; color: var(--text); }
+    .empty-state p { font-size: var(--text-sm); max-width: 320px; }
+
+    /* ── LEVEL 2 ─────────────────────────────────────────────── */
+    #level2 { flex: 1; display: flex; flex-direction: column; }
+
+    .store-meta {
+      display: flex; flex-direction: column; gap: var(--space-5);
+    }
+    .store-meta-header {
+      display: flex; align-items: center; gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+    .store-meta-flag { font-size: 2.5rem; }
+    .store-meta-name {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .meta-fields {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+    .meta-field {
+      display: flex; flex-direction: column; gap: var(--space-1);
+    }
+    .meta-field label {
+      font-size: var(--text-xs); font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .meta-field input {
+      padding: var(--space-2) var(--space-3);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface-2);
+      font-size: var(--text-sm);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .meta-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); outline: none; }
+
+    .divider {
+      height: 1px; background: var(--divider); margin: var(--space-2) 0;
+    }
+
+    /* Collections list */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: var(--text-lg); font-weight: 700;
+      color: var(--text);
+    }
+    .btn-add-small {
+      display: flex; align-items: center; gap: var(--space-1);
+      padding: var(--space-1) var(--space-3);
+      background: var(--primary-light);
+      color: var(--primary);
+      border-radius: var(--radius-full);
+      font-size: var(--text-xs); font-weight: 700;
+      transition: background var(--transition), color var(--transition);
+    }
+    .btn-add-small:hover { background: var(--primary); color: #fff; }
+
+    .collection-list {
+      display: flex; flex-direction: column; gap: var(--space-2);
+    }
+    .collection-item {
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .collection-item:hover { border-color: var(--primary); }
+    .collection-item.done { border-color: var(--cloud-stroke-done); background: var(--success-bg); }
+
+    .collection-row {
+      display: flex; align-items: center; gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      cursor: pointer;
+    }
+    .collection-row-name {
+      flex: 1; font-weight: 600; font-size: var(--text-sm);
+    }
+    .collection-row-progress {
+      display: flex; align-items: center; gap: var(--space-2);
+    }
+    .progress-pill {
+      font-size: var(--text-xs); color: var(--text-muted); font-weight: 600; white-space: nowrap;
+    }
+    .progress-pill.done { color: var(--success); }
+
+    .caret-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-md);
+      color: var(--primary);
+      transition: background var(--transition), transform var(--transition);
+    }
+    .caret-btn:hover { background: var(--primary-light); }
+    .caret-btn svg { transition: transform var(--transition); }
+    .collection-item.open .caret-btn svg { transform: rotate(90deg); }
+
+    /* Subcollection expand */
+    .subcollection-panel {
+      padding: 0 var(--space-4) 0 var(--space-6);
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 400ms cubic-bezier(0.16, 1, 0.3, 1), padding 400ms;
+    }
+    .collection-item.open .subcollection-panel {
+      max-height: 600px;
+      padding-bottom: var(--space-3);
+    }
+
+    .subcollection-list { display: flex; flex-direction: column; gap: var(--space-1); }
+    .subcollection-row {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-3);
+      border-radius: var(--radius-md);
+      background: transparent;
+      transition: background var(--transition);
+    }
+    .subcollection-row:hover { background: var(--surface-offset); }
+    .subcollection-row-name { flex: 1; font-size: var(--text-sm); }
+    .subcollection-row-progress { font-size: var(--text-xs); color: var(--text-muted); font-weight: 600; }
+    .subcollection-row-progress.done { color: var(--success); }
+
+    .btn-arrow {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: var(--radius-md);
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: var(--text-sm); font-weight: 700;
+      transition: background var(--transition), color var(--transition);
+      flex-shrink: 0;
+    }
+    .btn-arrow:hover { background: var(--primary); color: #fff; }
+
+    .sub-add-row {
+      padding: var(--space-2) var(--space-3);
+      display: flex; justify-content: flex-start;
+    }
+
+    /* ── LEVEL 3 ─────────────────────────────────────────────── */
+    #level3 { flex: 1; display: flex; flex-direction: column; }
+
+    .subcoll-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-5);
+    }
+    .subcoll-name {
+      font-family: var(--font-display);
+      font-size: var(--text-xl); font-weight: 800;
+    }
+    .subcoll-breadcrumb {
+      font-size: var(--text-xs); color: var(--text-muted);
+      display: flex; align-items: center; gap: var(--space-1);
+      flex-wrap: wrap;
+    }
+    .subcoll-breadcrumb-sep { color: var(--text-faint); }
+
+    .product-sets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .product-set-card {
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-4);
+      display: flex; flex-direction: column; gap: var(--space-3);
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+    .product-set-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); }
+    .product-set-card.done {
+      background: var(--success-bg);
+      border-color: var(--cloud-stroke-done);
+    }
+
+    .psc-header {
+      display: flex; align-items: flex-start; gap: var(--space-2);
+    }
+    .psc-name {
+      flex: 1; font-weight: 700; font-size: var(--text-sm);
+      color: var(--text);
+    }
+    .psc-done-check {
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .psc-done-check input[type="checkbox"] {
+      width: 18px; height: 18px; cursor: pointer;
+      accent-color: var(--success);
+    }
+
+    .psc-url a {
+      font-size: var(--text-xs); color: var(--primary);
+      display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .psc-url a:hover { text-decoration: underline; }
+
+    .psc-meta {
+      display: flex; gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+    .psc-meta-item {
+      display: flex; flex-direction: column; gap: 1px;
+    }
+    .psc-meta-label {
+      font-size: var(--text-xs); color: var(--text-faint); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .psc-meta-value {
+      font-size: var(--text-sm); font-weight: 600; color: var(--text);
+    }
+
+    .psc-actions { display: flex; gap: var(--space-2); margin-top: auto; }
+    .btn-icon-small {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      transition: background var(--transition), color var(--transition);
+    }
+    .btn-icon-small:hover { background: var(--surface-offset); color: var(--text); }
+    .btn-icon-small.delete:hover { background: #FEE2E2; color: #DC2626; }
+
+    /* all-done banner */
+    .all-done-banner {
+      display: flex; align-items: center; gap: var(--space-3);
+      background: var(--success-light);
+      border: 1.5px solid var(--cloud-stroke-done);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-5);
+      color: var(--success);
+      font-weight: 700; font-size: var(--text-sm);
+    }
+
+    /* ── MODAL ──────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      padding: var(--space-4);
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--transition-slow);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      padding: var(--space-6);
+      width: 100%; max-width: 480px;
+      transform: scale(0.96) translateY(8px);
+      transition: transform var(--transition-slow);
+    }
+    .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--space-5);
+    }
+    .modal-title {
+      font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700;
+    }
+    .modal-close {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-full);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      transition: background var(--transition), color var(--transition);
+    }
+    .modal-close:hover { background: var(--surface-offset); color: var(--text); }
+
+    .form-group {
+      display: flex; flex-direction: column; gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    .form-field {
+      display: flex; flex-direction: column; gap: var(--space-2);
+    }
+    .form-field label {
+      font-size: var(--text-sm); font-weight: 700; color: var(--text);
+    }
+    .form-field input, .form-field select {
+      padding: var(--space-2) var(--space-3);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      font-size: var(--text-sm);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-field input:focus, .form-field select:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); outline: none;
+    }
+
+    /* Flag picker */
+    .flag-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+      gap: var(--space-2);
+      max-height: 160px; overflow-y: auto;
+      padding: var(--space-2);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      background: var(--surface);
+    }
+    .flag-opt {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .flag-opt:hover { background: var(--primary-light); }
+    .flag-opt.selected { background: var(--primary-light); box-shadow: 0 0 0 2px var(--primary); }
+
+    .modal-actions {
+      display: flex; gap: var(--space-3); justify-content: flex-end;
+    }
+
+    /* ── ANIMATIONS ─────────────────────────────────────────── */
+    .view { display: none !important; flex-direction: column; flex: 1; }
+    .view.active { display: flex !important; animation: fadeIn 300ms ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── UTILITY ─────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; clip: rect(0,0,0,0); white-space: nowrap; }
+
+    /* scrollbar polish */
+    * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    *::-webkit-scrollbar { width: 6px; height: 6px; }
+    *::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .topbar { padding: var(--space-3) var(--space-4); }
+      .controls { padding: var(--space-3) var(--space-4); }
+      .stores-grid { padding: var(--space-2) var(--space-4) var(--space-8); gap: var(--space-6); }
+      .cloud-full { margin: var(--space-3) var(--space-4) var(--space-4); padding: var(--space-6) var(--space-5); }
+      .product-sets-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══════════════════════════════════════════════════════
+       TOP BAR
+  ═══════════════════════════════════════════════════════ -->
+  <header class="topbar">
+    <!-- Logo / Home -->
+    <a href="#" class="topbar-logo" id="logo-home" data-testid="logo-home" title="All Stores">
+      <!-- Cloud SVG logo -->
+      <svg width="28" height="20" viewBox="0 0 28 20" fill="none" aria-label="Collection Pomper cloud logo">
+        <path d="M22 17H6C3.24 17 1 14.76 1 12C1 9.53 2.76 7.48 5.12 7.07C5.04 6.73 5 6.37 5 6C5 3.24 7.24 1 10 1C11.77 1 13.34 1.9 14.24 3.27C14.78 3.1 15.38 3 16 3C18.76 3 21 5.24 21 8C21 8.1 21 8.21 20.99 8.31C22.83 9.04 24 10.85 24 13C24 15.21 23.21 17 22 17Z" fill="var(--primary)" opacity="0.2"/>
+        <path d="M22 17H6C3.24 17 1 14.76 1 12C1 9.53 2.76 7.48 5.12 7.07C5.04 6.73 5 6.37 5 6C5 3.24 7.24 1 10 1C11.77 1 13.34 1.9 14.24 3.27C14.78 3.1 15.38 3 16 3C18.76 3 21 5.24 21 8C21 8.1 21 8.21 20.99 8.31C22.83 9.04 24 10.85 24 13C24 15.21 23.21 17 22 17Z" stroke="var(--primary)" stroke-width="1.5" fill="none"/>
+      </svg>
+      Collection Pomper
+    </a>
+
+    <!-- Nav context (changes by level) -->
+    <nav class="topbar-nav" id="topbar-nav" aria-label="Breadcrumb"></nav>
+
+    <div class="topbar-actions">
+      <!-- Theme toggle -->
+      <button class="theme-toggle" data-theme-toggle title="Toggle theme" aria-label="Toggle dark/light mode" data-testid="theme-toggle">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LEVEL 1 — STORES
+  ═══════════════════════════════════════════════════════ -->
+  <section id="level1" class="view active" aria-label="All Stores">
+    <div class="controls">
+      <!-- Search -->
+      <div class="search-wrap">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" class="search-input" id="store-search" placeholder="Search stores…" data-testid="store-search" aria-label="Search stores" />
+      </div>
+
+      <!-- Filter dropdown -->
+      <div class="dropdown-wrap">
+        <button class="dropdown-btn" id="stores-dropdown-btn" data-testid="stores-dropdown" aria-haspopup="listbox" aria-expanded="false">
+          All Stores
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-menu" id="stores-dropdown-menu" role="listbox"></div>
+      </div>
+
+      <button class="btn-primary" id="btn-new-store" data-testid="btn-new-store">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        New Store
+      </button>
+    </div>
+
+    <!-- Store cards grid -->
+    <div class="stores-grid" id="stores-grid" data-testid="stores-grid"></div>
+
+    <!-- Empty state -->
+    <div class="empty-state hidden" id="stores-empty">
+      <svg width="56" height="40" viewBox="0 0 56 40" fill="none">
+        <path d="M44 37H12C6.48 37 2 32.52 2 27C2 22.06 5.52 17.97 10.24 17.13C10.08 16.44 10 15.73 10 15C10 9.48 14.48 5 20 5C23.54 5 26.68 6.79 28.48 9.54C29.55 9.19 30.75 9 32 9C37.52 9 42 13.48 42 19C42 19.21 41.99 19.42 41.97 19.62C45.66 21.07 48 24.71 48 29C48 33.42 46.42 37 44 37Z" fill="var(--text-faint)" opacity="0.3"/>
+        <path d="M44 37H12C6.48 37 2 32.52 2 27C2 22.06 5.52 17.97 10.24 17.13C10.08 16.44 10 15.73 10 15C10 9.48 14.48 5 20 5C23.54 5 26.68 6.79 28.48 9.54C29.55 9.19 30.75 9 32 9C37.52 9 42 13.48 42 19C42 19.21 41.99 19.42 41.97 19.62C45.66 21.07 48 24.71 48 29C48 33.42 46.42 37 44 37Z" stroke="var(--text-faint)" stroke-width="2"/>
+      </svg>
+      <h3>No stores yet</h3>
+      <p>Add your first store to start tracking product collection imports.</p>
+      <button class="btn-primary" onclick="openNewStoreModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Add First Store
+      </button>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LEVEL 2 — STORE DETAIL
+  ═══════════════════════════════════════════════════════ -->
+  <section id="level2" class="view" aria-label="Store Detail">
+    <div class="cloud-full" id="cloud-level2">
+      <div class="cloud-full-inner">
+        <!-- Store meta -->
+        <div class="store-meta" id="store-meta-content"></div>
+        <div class="divider" style="margin: var(--space-5) 0;"></div>
+        <!-- Collections -->
+        <div class="section-header">
+          <h2 class="section-title">Collections</h2>
+          <button class="btn-add-small" id="btn-add-collection" data-testid="btn-add-collection">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            Add Collection
+          </button>
+        </div>
+        <div class="collection-list" id="collection-list"></div>
+        <div class="empty-state hidden" id="collections-empty" style="padding: var(--space-8) 0;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 8v8M8 12h8"/></svg>
+          <h3 style="font-size: var(--text-base);">No collections</h3>
+          <p>Add your first collection to this store.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       LEVEL 3 — PRODUCT SETS
+  ═══════════════════════════════════════════════════════ -->
+  <section id="level3" class="view" aria-label="Product Sets">
+    <div class="cloud-full" id="cloud-level3">
+      <div class="cloud-full-inner">
+        <div class="subcoll-header">
+          <div>
+            <div class="subcoll-breadcrumb" id="subcoll-breadcrumb"></div>
+            <h2 class="subcoll-name" id="subcoll-name-display"></h2>
+          </div>
+          <button class="btn-primary" id="btn-add-product-set" data-testid="btn-add-product-set">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            New Product Set
+          </button>
+        </div>
+        <!-- All done banner -->
+        <div class="all-done-banner hidden" id="all-done-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+          All product sets imported — this subcollection is complete!
+        </div>
+        <!-- Progress -->
+        <div class="progress-wrap" id="level3-progress" style="margin-bottom: var(--space-5);"></div>
+        <!-- Grid -->
+        <div class="product-sets-grid" id="product-sets-grid" data-testid="product-sets-grid"></div>
+        <div class="empty-state hidden" id="product-sets-empty" style="padding: var(--space-8) 0;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <h3 style="font-size: var(--text-base);">No product sets yet</h3>
+          <p>Add product sets to track your Shopify imports.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- #app -->
+
+<!-- ═══════════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════════ -->
+
+<!-- New / Edit Store Modal -->
+<div class="modal-overlay" id="modal-store" role="dialog" aria-modal="true" aria-labelledby="modal-store-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-store-title">New Store</h2>
+      <button class="modal-close" id="modal-store-close" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <div class="form-field">
+        <label for="store-name-input">Store Name</label>
+        <input type="text" id="store-name-input" placeholder="e.g. Bella Torri" data-testid="store-name-input" />
+      </div>
+      <div class="form-field">
+        <label>Country Flag</label>
+        <div class="flag-grid" id="flag-grid" role="radiogroup" aria-label="Select country flag"></div>
+      </div>
+      <div class="form-field">
+        <label for="store-domain-input">Domain</label>
+        <input type="text" id="store-domain-input" placeholder="e.g. bellatorri.com" data-testid="store-domain-input" />
+      </div>
+      <div class="form-field">
+        <label for="store-shopify-input">Shopify URL</label>
+        <input type="text" id="store-shopify-input" placeholder="e.g. bellatorri.myshopify.com" data-testid="store-shopify-input" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modal-store-cancel">Cancel</button>
+      <button class="btn-primary" id="modal-store-save" data-testid="modal-store-save">Save Store</button>
+    </div>
+  </div>
+</div>
+
+<!-- New / Edit Collection Modal -->
+<div class="modal-overlay" id="modal-collection" role="dialog" aria-modal="true" aria-labelledby="modal-collection-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-collection-title">New Collection</h2>
+      <button class="modal-close" id="modal-collection-close" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <div class="form-field">
+        <label for="collection-name-input">Collection Name</label>
+        <input type="text" id="collection-name-input" placeholder="e.g. Dresses" data-testid="collection-name-input" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modal-collection-cancel">Cancel</button>
+      <button class="btn-primary" id="modal-collection-save" data-testid="modal-collection-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- New / Edit Subcollection Modal -->
+<div class="modal-overlay" id="modal-subcollection" role="dialog" aria-modal="true" aria-labelledby="modal-subcollection-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-subcollection-title">New Subcollection</h2>
+      <button class="modal-close" id="modal-subcollection-close" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <div class="form-field">
+        <label for="subcollection-name-input">Subcollection Name</label>
+        <input type="text" id="subcollection-name-input" placeholder="e.g. Midi Dresses" data-testid="subcollection-name-input" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modal-subcollection-cancel">Cancel</button>
+      <button class="btn-primary" id="modal-subcollection-save" data-testid="modal-subcollection-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- New / Edit Product Set Modal -->
+<div class="modal-overlay" id="modal-product-set" role="dialog" aria-modal="true" aria-labelledby="modal-product-set-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-product-set-title">New Product Set</h2>
+      <button class="modal-close" id="modal-product-set-close" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="form-group">
+      <div class="form-field">
+        <label for="ps-name-input">Set Name</label>
+        <input type="text" id="ps-name-input" placeholder="e.g. KAILA FASHION" data-testid="ps-name-input" />
+      </div>
+      <div class="form-field">
+        <label for="ps-url-input">Supplier URL</label>
+        <input type="url" id="ps-url-input" placeholder="https://supplier.com/collection/..." data-testid="ps-url-input" />
+      </div>
+      <div class="form-field">
+        <label for="ps-qty-input">Qty of Products</label>
+        <input type="number" id="ps-qty-input" placeholder="e.g. 24" min="0" data-testid="ps-qty-input" />
+      </div>
+      <div class="form-field">
+        <label for="ps-price-input">Price Title</label>
+        <input type="text" id="ps-price-input" placeholder="e.g. 49.99" data-testid="ps-price-input" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modal-ps-cancel">Cancel</button>
+      <button class="btn-primary" id="modal-ps-save" data-testid="modal-ps-save">Save Product Set</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     APPLICATION LOGIC
+═══════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── DATA ─────────────────────────────────────────────────────────────
+
+const FLAGS = [
+  '🇺🇸','🇬🇧','🇩🇪','🇫🇷','🇮🇹','🇪🇸','🇵🇹','🇳🇱','🇧🇪','🇨🇭',
+  '🇦🇹','🇸🇪','🇳🇴','🇩🇰','🇫🇮','🇵🇱','🇨🇿','🇷🇴','🇭🇺','🇬🇷',
+  '🇹🇷','🇷🇺','🇺🇦','🇮🇱','🇦🇪','🇸🇦','🇮🇳','🇨🇳','🇯🇵','🇰🇷',
+  '🇦🇺','🇳🇿','🇨🇦','🇲🇽','🇧🇷','🇦🇷','🇨🇴','🇿🇦','🇪🇬','🇳🇬',
+  '🇵🇭','🇮🇩','🇲🇾','🇹🇭','🇻🇳','🇸🇬','🌍','🌎','🌏','🏳️'
+];
+
+async function loadData() {
+  try {
+    const res = await fetch('/api/data');
+    return await res.json();
+  } catch { return { stores: [] }; }
+}
+
+async function saveData() {
+  try {
+    await fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state)
+    });
+  } catch {}
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────
+let state = { stores: [] };
+let currentStoreId = null;
+let currentCollectionId = null;
+let currentSubcollectionId = null;
+let editingStoreId = null;
+let editingCollectionId = null;
+let editingSubcollectionId = null;
+let editingProductSetId = null;
+let pendingCollectionId = null; // for adding subcollection
+let selectedFlag = '🇺🇸';
+
+// ── HELPERS ───────────────────────────────────────────────────────────
+function getStore(id) { return state.stores.find(s => s.id === id); }
+function getCollection(store, id) { return store.collections.find(c => c.id === id); }
+function getSubcollection(col, id) { return col.subcollections.find(s => s.id === id); }
+
+function getProductSetsStats(subcollection) {
+  const total = subcollection.productSets.length;
+  const done  = subcollection.productSets.filter(p => p.done).length;
+  return { total, done };
+}
+
+function getSubcollectionStats(collection) {
+  let total = 0, done = 0;
+  for (const sub of collection.subcollections) {
+    const s = getProductSetsStats(sub);
+    total += s.total; done += s.done;
+  }
+  return { total, done };
+}
+
+function getStoreStats(store) {
+  let total = 0, done = 0;
+  for (const col of store.collections) {
+    const s = getSubcollectionStats(col);
+    total += s.total; done += s.done;
+  }
+  return { total, done };
+}
+
+function isSubcollDone(sub) {
+  const { total, done } = getProductSetsStats(sub);
+  return total > 0 && done === total;
+}
+function isCollectionDone(col) {
+  if (!col.subcollections.length) return false;
+  return col.subcollections.every(isSubcollDone);
+}
+function isStoreDone(store) {
+  if (!store.collections.length) return false;
+  return store.collections.every(isCollectionDone);
+}
+
+// ── VIEWS ─────────────────────────────────────────────────────────────
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  renderNav(id);
+}
+
+function renderNav(viewId) {
+  const nav = document.getElementById('topbar-nav');
+  nav.innerHTML = '';
+
+  if (viewId === 'level1') {
+    // nothing extra
+    return;
+  }
+
+  // Back button always goes one level up
+  const back = document.createElement('button');
+  back.className = 'nav-back';
+  back.setAttribute('data-testid', 'nav-back');
+  back.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg> Back`;
+
+  if (viewId === 'level2') {
+    back.onclick = () => goToLevel1();
+  } else {
+    back.onclick = () => goToLevel2(currentStoreId);
+  }
+
+  nav.appendChild(back);
+
+  // Breadcrumb
+  const bc = document.createElement('div');
+  bc.className = 'breadcrumb';
+
+  if (viewId === 'level2') {
+    const store = getStore(currentStoreId);
+    if (store) {
+      bc.innerHTML = `<span class="breadcrumb-item">${store.flag} ${store.name}</span>`;
+    }
+  } else {
+    const store = getStore(currentStoreId);
+    const col = store && getCollection(store, currentCollectionId);
+    const sub = col && getSubcollection(col, currentSubcollectionId);
+    if (store && col && sub) {
+      bc.innerHTML = `
+        <span style="cursor:pointer; color:var(--primary)" onclick="goToLevel1()">${store.flag} ${store.name}</span>
+        <span class="breadcrumb-sep">›</span>
+        <span style="cursor:pointer; color:var(--primary)" onclick="goToLevel2('${store.id}')">${col.name}</span>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-item">${sub.name}</span>
+      `;
+    }
+  }
+
+  nav.appendChild(bc);
+}
+
+// ── LEVEL 1 ───────────────────────────────────────────────────────────
+function goToLevel1() {
+  currentStoreId = null; currentCollectionId = null; currentSubcollectionId = null;
+  showView('level1');
+  renderStoresGrid();
+  renderStoresDropdown();
+}
+
+function renderStoresGrid(filter = '') {
+  const grid = document.getElementById('stores-grid');
+  const empty = document.getElementById('stores-empty');
+  const lf = filter.toLowerCase();
+  const stores = state.stores.filter(s => s.name.toLowerCase().includes(lf));
+
+  grid.innerHTML = '';
+
+  if (stores.length === 0) {
+    empty.classList.remove('hidden');
+    grid.classList.add('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  grid.classList.remove('hidden');
+
+  stores.forEach(store => {
+    const stats = getStoreStats(store);
+    const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
+    const done = isStoreDone(store);
+
+    const card = document.createElement('div');
+    card.className = `cloud-card${done ? ' done' : ''}`;
+    card.setAttribute('data-testid', `store-card-${store.id}`);
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-label', `Open ${store.name}`);
+
+    card.innerHTML = `
+      <div class="store-card-content">
+        <div class="store-card-flag">${store.flag}</div>
+        <div class="store-card-name">${escHtml(store.name)}</div>
+        ${store.domain ? `<div class="store-card-domain">${escHtml(store.domain)}</div>` : ''}
+        <div class="store-card-progress">
+          ${done ? `<div class="done-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> All Done</div>` : ''}
+          <div class="progress-wrap" style="margin-top: ${done ? 'var(--space-2)' : '0'}">
+            <div class="progress-label">
+              <span>${stats.done} / ${stats.total} set${stats.total !== 1 ? 's' : ''} done</span>
+              <span>${pct}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill${done ? ' done' : ''}" style="width:${pct}%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    card.addEventListener('click', () => goToLevel2(store.id));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') goToLevel2(store.id); });
+
+    grid.appendChild(card);
+  });
+}
+
+function renderStoresDropdown() {
+  const menu = document.getElementById('stores-dropdown-menu');
+  menu.innerHTML = '';
+  state.stores.forEach(store => {
+    const item = document.createElement('button');
+    item.className = 'dropdown-item';
+    item.setAttribute('role', 'option');
+    item.setAttribute('data-testid', `dropdown-store-${store.id}`);
+    item.innerHTML = `<span>${store.flag}</span><span>${escHtml(store.name)}</span>`;
+    item.onclick = () => {
+      closeAllDropdowns();
+      goToLevel2(store.id);
+    };
+    menu.appendChild(item);
+  });
+  if (!state.stores.length) {
+    menu.innerHTML = `<div class="dropdown-item" style="color:var(--text-faint); cursor:default;">No stores yet</div>`;
+  }
+}
+
+// ── LEVEL 2 ───────────────────────────────────────────────────────────
+function goToLevel2(storeId) {
+  currentStoreId = storeId;
+  currentCollectionId = null;
+  currentSubcollectionId = null;
+  showView('level2');
+  renderLevel2();
+}
+
+function renderLevel2() {
+  const store = getStore(currentStoreId);
+  if (!store) return;
+
+  const cloud = document.getElementById('cloud-level2');
+  cloud.className = `cloud-full${isStoreDone(store) ? ' done' : ''}`;
+
+  const meta = document.getElementById('store-meta-content');
+  meta.innerHTML = `
+    <div class="store-meta-header">
+      <span class="store-meta-flag">${store.flag}</span>
+      <h1 class="store-meta-name">${escHtml(store.name)}</h1>
+    </div>
+    <div class="meta-fields">
+      <div class="meta-field">
+        <label for="edit-domain">Domain</label>
+        <input type="text" id="edit-domain" value="${escAttr(store.domain || '')}" placeholder="e.g. bellatorri.com" data-testid="edit-domain" />
+      </div>
+      <div class="meta-field">
+        <label for="edit-shopify">Shopify URL</label>
+        <input type="text" id="edit-shopify" value="${escAttr(store.shopifyUrl || '')}" placeholder="e.g. bellatorri.myshopify.com" data-testid="edit-shopify" />
+      </div>
+    </div>
+  `;
+
+  // Auto-save meta fields
+  document.getElementById('edit-domain').addEventListener('input', e => {
+    store.domain = e.target.value.trim();
+    saveData();
+    renderStoresDropdown();
+  });
+  document.getElementById('edit-shopify').addEventListener('input', e => {
+    store.shopifyUrl = e.target.value.trim();
+    saveData();
+  });
+
+  renderCollectionList();
+}
+
+function renderCollectionList() {
+  const store = getStore(currentStoreId);
+  if (!store) return;
+
+  const list = document.getElementById('collection-list');
+  const empty = document.getElementById('collections-empty');
+  list.innerHTML = '';
+
+  if (!store.collections.length) {
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  store.collections.forEach(col => {
+    const stats = getSubcollectionStats(col);
+    const colDone = isCollectionDone(col);
+    const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
+
+    const item = document.createElement('div');
+    item.className = `collection-item${colDone ? ' done' : ''}`;
+    item.setAttribute('data-col-id', col.id);
+
+    item.innerHTML = `
+      <div class="collection-row" data-testid="collection-row-${col.id}">
+        <span class="collection-row-name">${escHtml(col.name)}</span>
+        <div class="collection-row-progress">
+          <span class="progress-pill${colDone ? ' done' : ''}">${stats.done}/${stats.total}</span>
+          <div class="progress-bar" style="width:64px">
+            <div class="progress-fill${colDone ? ' done' : ''}" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <button class="caret-btn" title="Expand subcollections" data-testid="expand-collection-${col.id}" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <button class="btn-icon-small delete" title="Delete collection" data-testid="delete-collection-${col.id}" onclick="deleteCollection('${col.id}', event)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+      <div class="subcollection-panel">
+        ${renderSubcollectionPanel(col)}
+      </div>
+    `;
+
+    const row = item.querySelector('.collection-row');
+    const panel = item.querySelector('.subcollection-panel');
+    const caret = item.querySelector('.caret-btn');
+
+    row.addEventListener('click', e => {
+      if (e.target.closest('.btn-icon-small')) return;
+      const open = item.classList.toggle('open');
+      caret.setAttribute('aria-expanded', open);
+    });
+
+    list.appendChild(item);
+  });
+}
+
+function renderSubcollectionPanel(col) {
+  let html = `<div class="subcollection-list">`;
+  col.subcollections.forEach(sub => {
+    const { total, done } = getProductSetsStats(sub);
+    const subDone = isSubcollDone(sub);
+    html += `
+      <div class="subcollection-row">
+        <span class="subcollection-row-name">${subDone ? '✅ ' : ''}${escHtml(sub.name)}</span>
+        <span class="subcollection-row-progress${subDone ? ' done' : ''}">${done}/${total}</span>
+        <button class="btn-arrow" title="Open ${escAttr(sub.name)}" data-testid="open-subcoll-${sub.id}" onclick="goToLevel3('${col.id}','${sub.id}')">→</button>
+        <button class="btn-icon-small delete" title="Delete subcollection" onclick="deleteSubcollection('${col.id}','${sub.id}',event)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    `;
+  });
+  html += `</div>
+  <div class="sub-add-row">
+    <button class="btn-add-small" onclick="openNewSubcollectionModal('${col.id}')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Add Subcollection
+    </button>
+  </div>`;
+  return html;
+}
+
+// ── LEVEL 3 ───────────────────────────────────────────────────────────
+function goToLevel3(collectionId, subcollectionId) {
+  currentCollectionId = collectionId;
+  currentSubcollectionId = subcollectionId;
+  showView('level3');
+  renderLevel3();
+}
+
+function renderLevel3() {
+  const store = getStore(currentStoreId);
+  if (!store) return;
+  const col = getCollection(store, currentCollectionId);
+  if (!col) return;
+  const sub = getSubcollection(col, currentSubcollectionId);
+  if (!sub) return;
+
+  const { total, done } = getProductSetsStats(sub);
+  const allDone = total > 0 && done === total;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  // Cloud colour
+  document.getElementById('cloud-level3').className = `cloud-full${allDone ? ' done' : ''}`;
+
+  // Header
+  document.getElementById('subcoll-name-display').textContent = sub.name;
+  document.getElementById('subcoll-breadcrumb').innerHTML = `
+    <span style="cursor:pointer;color:var(--primary)" onclick="goToLevel1()">${store.flag} ${store.name}</span>
+    <span class="subcoll-breadcrumb-sep">›</span>
+    <span style="cursor:pointer;color:var(--primary)" onclick="goToLevel2('${store.id}')">${col.name}</span>
+    <span class="subcoll-breadcrumb-sep">›</span>
+    <strong>${escHtml(sub.name)}</strong>
+  `;
+
+  // All done banner
+  const banner = document.getElementById('all-done-banner');
+  if (allDone) banner.classList.remove('hidden');
+  else banner.classList.add('hidden');
+
+  // Progress bar
+  const prog = document.getElementById('level3-progress');
+  prog.innerHTML = `
+    <div class="progress-label">
+      <span>${done} of ${total} set${total !== 1 ? 's' : ''} imported</span>
+      <span style="color:${allDone ? 'var(--success)' : 'var(--text-muted)'}">${pct}%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill${allDone ? ' done' : ''}" style="width:${pct}%"></div>
+    </div>
+  `;
+
+  // Product set cards
+  const grid = document.getElementById('product-sets-grid');
+  const empty = document.getElementById('product-sets-empty');
+  grid.innerHTML = '';
+
+  if (!sub.productSets.length) {
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  sub.productSets.forEach(ps => {
+    const card = document.createElement('div');
+    card.className = `product-set-card${ps.done ? ' done' : ''}`;
+    card.setAttribute('data-testid', `product-set-card-${ps.id}`);
+    card.innerHTML = `
+      <div class="psc-header">
+        <span class="psc-name">${escHtml(ps.name)}</span>
+        <div class="psc-done-check">
+          <input type="checkbox" id="done-${ps.id}" ${ps.done ? 'checked' : ''} data-testid="done-checkbox-${ps.id}" aria-label="Mark as done" />
+        </div>
+      </div>
+      ${ps.url ? `<div class="psc-url"><a href="${escAttr(ps.url)}" target="_blank" rel="noopener">${escHtml(ps.url)}</a></div>` : ''}
+      <div class="psc-meta">
+        ${ps.qty !== '' && ps.qty !== undefined ? `<div class="psc-meta-item"><div class="psc-meta-label">Qty</div><div class="psc-meta-value">${escHtml(String(ps.qty))}</div></div>` : ''}
+        ${ps.price ? `<div class="psc-meta-item"><div class="psc-meta-label">Price</div><div class="psc-meta-value">€${escHtml(ps.price)}</div></div>` : ''}
+      </div>
+      <div class="psc-actions">
+        <button class="btn-icon-small" title="Edit" data-testid="edit-ps-${ps.id}" onclick="editProductSet('${ps.id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn-icon-small delete" title="Delete" data-testid="delete-ps-${ps.id}" onclick="deleteProductSet('${ps.id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    `;
+
+    // Done toggle
+    card.querySelector('input[type="checkbox"]').addEventListener('change', e => {
+      ps.done = e.target.checked;
+      saveData();
+      renderLevel3();
+      // Also refresh level2 cloud colour if open
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+// ── STORE CRUD ─────────────────────────────────────────────────────────
+function openNewStoreModal() {
+  editingStoreId = null;
+  selectedFlag = '🇺🇸';
+  document.getElementById('modal-store-title').textContent = 'New Store';
+  document.getElementById('store-name-input').value = '';
+  document.getElementById('store-domain-input').value = '';
+  document.getElementById('store-shopify-input').value = '';
+  renderFlagGrid();
+  openModal('modal-store');
+  setTimeout(() => document.getElementById('store-name-input').focus(), 100);
+}
+
+function openEditStoreModal(storeId) {
+  const store = getStore(storeId);
+  if (!store) return;
+  editingStoreId = storeId;
+  selectedFlag = store.flag;
+  document.getElementById('modal-store-title').textContent = 'Edit Store';
+  document.getElementById('store-name-input').value = store.name;
+  document.getElementById('store-domain-input').value = store.domain || '';
+  document.getElementById('store-shopify-input').value = store.shopifyUrl || '';
+  renderFlagGrid();
+  openModal('modal-store');
+}
+
+function saveStore() {
+  const name = document.getElementById('store-name-input').value.trim();
+  if (!name) { document.getElementById('store-name-input').focus(); return; }
+  const domain = document.getElementById('store-domain-input').value.trim();
+  const shopifyUrl = document.getElementById('store-shopify-input').value.trim();
+
+  if (editingStoreId) {
+    const store = getStore(editingStoreId);
+    Object.assign(store, { name, flag: selectedFlag, domain, shopifyUrl });
+  } else {
+    state.stores.push({
+      id: uid(), name, flag: selectedFlag, domain, shopifyUrl,
+      collections: []
+    });
+  }
+  saveData();
+  closeModal('modal-store');
+  goToLevel1();
+}
+
+function deleteCollection(colId, e) {
+  e.stopPropagation();
+  const store = getStore(currentStoreId);
+  if (!store) return;
+  if (!confirm('Delete this collection and all its subcollections and product sets?')) return;
+  store.collections = store.collections.filter(c => c.id !== colId);
+  saveData();
+  renderLevel2();
+}
+
+function deleteSubcollection(colId, subId, e) {
+  e.stopPropagation();
+  const store = getStore(currentStoreId);
+  if (!store) return;
+  const col = getCollection(store, colId);
+  if (!col) return;
+  if (!confirm('Delete this subcollection and all its product sets?')) return;
+  col.subcollections = col.subcollections.filter(s => s.id !== subId);
+  saveData();
+  renderCollectionList();
+}
+
+// ── COLLECTION CRUD ────────────────────────────────────────────────────
+function openNewCollectionModal() {
+  editingCollectionId = null;
+  document.getElementById('modal-collection-title').textContent = 'New Collection';
+  document.getElementById('collection-name-input').value = '';
+  openModal('modal-collection');
+  setTimeout(() => document.getElementById('collection-name-input').focus(), 100);
+}
+
+function saveCollection() {
+  const name = document.getElementById('collection-name-input').value.trim();
+  if (!name) { document.getElementById('collection-name-input').focus(); return; }
+  const store = getStore(currentStoreId);
+  if (!store) return;
+
+  if (editingCollectionId) {
+    const col = getCollection(store, editingCollectionId);
+    if (col) col.name = name;
+  } else {
+    store.collections.push({ id: uid(), name, subcollections: [] });
+  }
+  saveData();
+  closeModal('modal-collection');
+  renderCollectionList();
+}
+
+// ── SUBCOLLECTION CRUD ─────────────────────────────────────────────────
+function openNewSubcollectionModal(collectionId) {
+  pendingCollectionId = collectionId;
+  editingSubcollectionId = null;
+  document.getElementById('modal-subcollection-title').textContent = 'New Subcollection';
+  document.getElementById('subcollection-name-input').value = '';
+  openModal('modal-subcollection');
+  setTimeout(() => document.getElementById('subcollection-name-input').focus(), 100);
+}
+
+function saveSubcollection() {
+  const name = document.getElementById('subcollection-name-input').value.trim();
+  if (!name) { document.getElementById('subcollection-name-input').focus(); return; }
+  const store = getStore(currentStoreId);
+  if (!store) return;
+  const col = getCollection(store, pendingCollectionId);
+  if (!col) return;
+
+  if (editingSubcollectionId) {
+    const sub = getSubcollection(col, editingSubcollectionId);
+    if (sub) sub.name = name;
+  } else {
+    col.subcollections.push({ id: uid(), name, productSets: [] });
+  }
+  saveData();
+  closeModal('modal-subcollection');
+  renderCollectionList();
+  // Re-open the parent collection panel
+  setTimeout(() => {
+    const colItem = document.querySelector(`[data-col-id="${pendingCollectionId}"]`);
+    if (colItem && !colItem.classList.contains('open')) colItem.classList.add('open');
+  }, 50);
+}
+
+// ── PRODUCT SET CRUD ───────────────────────────────────────────────────
+function openNewProductSetModal() {
+  editingProductSetId = null;
+  document.getElementById('modal-product-set-title').textContent = 'New Product Set';
+  document.getElementById('ps-name-input').value = '';
+  document.getElementById('ps-url-input').value = '';
+  document.getElementById('ps-qty-input').value = '';
+  document.getElementById('ps-price-input').value = '';
+  openModal('modal-product-set');
+  setTimeout(() => document.getElementById('ps-name-input').focus(), 100);
+}
+
+function editProductSet(psId) {
+  const store = getStore(currentStoreId);
+  const col = getCollection(store, currentCollectionId);
+  const sub = getSubcollection(col, currentSubcollectionId);
+  const ps = sub.productSets.find(p => p.id === psId);
+  if (!ps) return;
+
+  editingProductSetId = psId;
+  document.getElementById('modal-product-set-title').textContent = 'Edit Product Set';
+  document.getElementById('ps-name-input').value = ps.name;
+  document.getElementById('ps-url-input').value = ps.url || '';
+  document.getElementById('ps-qty-input').value = ps.qty !== undefined ? ps.qty : '';
+  document.getElementById('ps-price-input').value = ps.price || '';
+  openModal('modal-product-set');
+  setTimeout(() => document.getElementById('ps-name-input').focus(), 100);
+}
+
+function saveProductSet() {
+  const name  = document.getElementById('ps-name-input').value.trim();
+  if (!name) { document.getElementById('ps-name-input').focus(); return; }
+  const url   = document.getElementById('ps-url-input').value.trim();
+  const qty   = document.getElementById('ps-qty-input').value.trim();
+  const price = document.getElementById('ps-price-input').value.trim();
+
+  const store = getStore(currentStoreId);
+  const col   = getCollection(store, currentCollectionId);
+  const sub   = getSubcollection(col, currentSubcollectionId);
+
+  if (editingProductSetId) {
+    const ps = sub.productSets.find(p => p.id === editingProductSetId);
+    if (ps) Object.assign(ps, { name, url, qty, price });
+  } else {
+    sub.productSets.push({ id: uid(), name, url, qty, price, done: false });
+  }
+  saveData();
+  closeModal('modal-product-set');
+  renderLevel3();
+}
+
+function deleteProductSet(psId) {
+  if (!confirm('Delete this product set?')) return;
+  const store = getStore(currentStoreId);
+  const col   = getCollection(store, currentCollectionId);
+  const sub   = getSubcollection(col, currentSubcollectionId);
+  sub.productSets = sub.productSets.filter(p => p.id !== psId);
+  saveData();
+  renderLevel3();
+}
+
+// ── FLAG GRID ─────────────────────────────────────────────────────────
+function renderFlagGrid() {
+  const grid = document.getElementById('flag-grid');
+  grid.innerHTML = '';
+  FLAGS.forEach(flag => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `flag-opt${flag === selectedFlag ? ' selected' : ''}`;
+    btn.textContent = flag;
+    btn.title = flag;
+    btn.setAttribute('role', 'radio');
+    btn.setAttribute('aria-checked', flag === selectedFlag);
+    btn.onclick = () => {
+      selectedFlag = flag;
+      grid.querySelectorAll('.flag-opt').forEach(b => {
+        b.classList.toggle('selected', b.textContent === flag);
+        b.setAttribute('aria-checked', b.textContent === flag);
+      });
+    };
+    grid.appendChild(btn);
+  });
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.dropdown-btn').forEach(b => { b.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); });
+}
+
+// ── ESCAPE HELPERS ────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+function escAttr(str) { return escHtml(str); }
+
+// ── THEME TOGGLE ──────────────────────────────────────────────────────
+(function() {
+  const html = document.documentElement;
+  const system = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  html.setAttribute('data-theme', system);
+
+  const btn = document.querySelector('[data-theme-toggle]');
+  function setIcon(theme) {
+    if (!btn) return;
+    btn.innerHTML = theme === 'dark'
+      ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`
+      : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+  }
+  setIcon(system);
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const cur = html.getAttribute('data-theme') || system;
+      const next = cur === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      setIcon(next);
+    });
+  }
+})();
+
+// ── EVENT WIRING ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+
+  // New Store button
+  document.getElementById('btn-new-store').onclick = openNewStoreModal;
+
+  // Logo → Level 1
+  document.getElementById('logo-home').onclick = e => { e.preventDefault(); goToLevel1(); };
+
+  // Store dropdown
+  const dropBtn = document.getElementById('stores-dropdown-btn');
+  const dropMenu = document.getElementById('stores-dropdown-menu');
+  dropBtn.onclick = e => {
+    e.stopPropagation();
+    const open = dropMenu.classList.toggle('open');
+    dropBtn.classList.toggle('open', open);
+    dropBtn.setAttribute('aria-expanded', open);
+  };
+
+  // Search
+  document.getElementById('store-search').addEventListener('input', e => {
+    renderStoresGrid(e.target.value);
+  });
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', closeAllDropdowns);
+
+  // Modal close buttons
+  document.getElementById('modal-store-close').onclick = () => closeModal('modal-store');
+  document.getElementById('modal-store-cancel').onclick = () => closeModal('modal-store');
+  document.getElementById('modal-store-save').onclick = saveStore;
+
+  document.getElementById('modal-collection-close').onclick = () => closeModal('modal-collection');
+  document.getElementById('modal-collection-cancel').onclick = () => closeModal('modal-collection');
+  document.getElementById('modal-collection-save').onclick = saveCollection;
+
+  document.getElementById('modal-subcollection-close').onclick = () => closeModal('modal-subcollection');
+  document.getElementById('modal-subcollection-cancel').onclick = () => closeModal('modal-subcollection');
+  document.getElementById('modal-subcollection-save').onclick = saveSubcollection;
+
+  document.getElementById('modal-product-set-close').onclick = () => closeModal('modal-product-set');
+  document.getElementById('modal-ps-cancel').onclick = () => closeModal('modal-product-set');
+  document.getElementById('modal-ps-save').onclick = saveProductSet;
+
+  // Add Collection button (Level 2)
+  document.getElementById('btn-add-collection').onclick = openNewCollectionModal;
+
+  // Add Product Set button (Level 3)
+  document.getElementById('btn-add-product-set').onclick = openNewProductSetModal;
+
+  // Enter key in modals
+  ['store-name-input', 'store-domain-input', 'store-shopify-input'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') saveStore(); });
+  });
+  document.getElementById('collection-name-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveCollection(); });
+  document.getElementById('subcollection-name-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveSubcollection(); });
+  ['ps-name-input','ps-url-input','ps-qty-input','ps-price-input'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') saveProductSet(); });
+  });
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeModal(overlay.id);
+    });
+  });
+
+  // Keyboard: Escape closes modals
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+      closeAllDropdowns();
+    }
+  });
+
+  // Initial render — load from server first
+  state = await loadData();
+  goToLevel1();
+});
+</script>
+</body>
+</html>
