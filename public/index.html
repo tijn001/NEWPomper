@@ -1654,7 +1654,9 @@ function saveStore() {
 
 function deleteStore(storeId, e) {
   e.stopPropagation();
-  if (!confirm('Delete this store and all its data?')) return;
+  const pw = prompt('Enter delete password:');
+  if (pw === null) return;
+  if (pw !== 'delete') { alert('Wrong password.'); return; }
   state.stores = state.stores.filter(s => s.id !== storeId);
   saveData();
   renderStoresGrid();
