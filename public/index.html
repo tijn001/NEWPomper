@@ -1097,6 +1097,15 @@
       </div>
       <div class="form-field">
         <label for="ps-price-input">Price Title</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+          <button type="button" class="btn-ghost" style="font-size:0.75rem;padding:3px 10px;border-radius:9999px" onclick="setPricePreset('+10')">+$10</button>
+          <button type="button" class="btn-ghost" style="font-size:0.75rem;padding:3px 10px;border-radius:9999px" onclick="setPricePreset('+15')">+$15</button>
+          <button type="button" class="btn-ghost" style="font-size:0.75rem;padding:3px 10px;border-radius:9999px" onclick="setPricePreset('+20')">+$20</button>
+          <button type="button" class="btn-ghost" style="font-size:0.75rem;padding:3px 10px;border-radius:9999px" onclick="setPricePreset('-10')">-$10</button>
+          <button type="button" class="btn-ghost" style="font-size:0.75rem;padding:3px 10px;border-radius:9999px" onclick="setPricePreset('-15')">-$15</button>
+          <button type="button" class="btn-ghost" style="font-size:0.75rem;padding:3px 10px;border-radius:9999px" onclick="setPricePreset('-20')">-$20</button>
+          <button type="button" class="btn-ghost" style="font-size:0.75rem;padding:3px 10px;border-radius:9999px" onclick="setPricePreset('50off')">50% off compare</button>
+        </div>
         <input type="text" id="ps-price-input" placeholder="e.g. 49.99" data-testid="ps-price-input" />
       </div>
     </div>
@@ -1191,6 +1200,20 @@ function getStoreStats(store) {
     total += s.total; done += s.done;
   }
   return { total, done };
+}
+
+function getStoreProductTotals(store) {
+  let added = 0, pending = 0;
+  for (const col of store.collections) {
+    for (const sub of col.subcollections) {
+      for (const ps of sub.productSets) {
+        const qty = parseInt(ps.qty) || 0;
+        if (ps.done) added += qty;
+        else pending += qty;
+      }
+    }
+  }
+  return { added, pending, total: added + pending };
 }
 
 function isSubcollDone(sub) {
@@ -1380,7 +1403,10 @@ function renderLevel2() {
   meta.innerHTML = `
     <div class="store-meta-header">
       <span class="store-meta-flag">${store.flag}</span>
-      <h1 class="store-meta-name">${escHtml(store.name)}</h1>
+      <div>
+        <h1 class="store-meta-name">${escHtml(store.name)}</h1>
+        ${(()=>{ const t=getStoreProductTotals(store); return t.total>0 ? `<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">Products added: <strong>${t.added}</strong> &nbsp;·&nbsp; Pending: <strong>${t.pending}</strong> &nbsp;·&nbsp; Total: <strong>${t.total}</strong></div>` : ''; })()}
+      </div>
     </div>
     <div class="meta-fields">
       <div class="meta-field">
@@ -1580,7 +1606,7 @@ function renderLevel3() {
       ${ps.url ? `<div class="psc-url"><a href="${escAttr(ps.url)}" target="_blank" rel="noopener">${escHtml(ps.url)}</a></div>` : ''}
       <div class="psc-meta">
         ${ps.qty !== '' && ps.qty !== undefined ? `<div class="psc-meta-item"><div class="psc-meta-label">Qty</div><div class="psc-meta-value">${escHtml(String(ps.qty))}</div></div>` : ''}
-        ${ps.price ? `<div class="psc-meta-item"><div class="psc-meta-label">Price</div><div class="psc-meta-value">€${escHtml(ps.price)}</div></div>` : ''}
+        ${ps.price ? `<div class="psc-meta-item"><div class="psc-meta-label">Price</div><div class="psc-meta-value">${escHtml(ps.price)}</div></div>` : ''}
       </div>
       <div class="psc-actions">
         <button class="btn-icon-small" title="Edit" data-testid="edit-ps-${ps.id}" onclick="editProductSet('${ps.id}')">
@@ -1768,15 +1794,31 @@ function saveSubcollection() {
 }
 
 // ── PRODUCT SET CRUD ───────────────────────────────────────────────────
+function setPricePreset(preset) {
+  const labels = {
+    '+10': '$10 higher', '+15': '$15 higher', '+20': '$20 higher',
+    '-10': '$10 lower',  '-15': '$15 lower',  '-20': '$20 lower',
+    '50off': 'Add 50% off compare at price'
+  };
+  document.getElementById('ps-price-input').value = labels[preset] || preset;
+}
+
 function openNewProductSetModal() {
   editingProductSetId = null;
+  // Auto-generate name: SubcollectionName + (count+1)
+  const store = getStore(currentStoreId);
+  const col   = getCollection(store, currentCollectionId);
+  const sub   = getSubcollection(col, currentSubcollectionId);
+  const nextNum = sub.productSets.length + 1;
+  const autoName = sub.name + nextNum;
+
   document.getElementById('modal-product-set-title').textContent = 'New Product Set';
-  document.getElementById('ps-name-input').value = '';
+  document.getElementById('ps-name-input').value = autoName;
   document.getElementById('ps-url-input').value = '';
   document.getElementById('ps-qty-input').value = '';
   document.getElementById('ps-price-input').value = '';
   openModal('modal-product-set');
-  setTimeout(() => document.getElementById('ps-name-input').focus(), 100);
+  setTimeout(() => document.getElementById('ps-url-input').focus(), 100);
 }
 
 function editProductSet(psId) {
